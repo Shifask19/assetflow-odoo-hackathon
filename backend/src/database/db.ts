@@ -69,7 +69,8 @@ class CompatDb {
   }
 
   exec(sql: string): void {
-    this._db.exec(sql);
+    // sql.js exec() has issues with IF NOT EXISTS — use run() instead
+    this._db.run(sql);
   }
 
   pragma(stmt: string): void {
@@ -126,7 +127,32 @@ export function getDb(): CompatDb {
 // ──────────────────────────────────────────────────────────
 function initializeSchema(): void {
   const schema = fs.readFileSync(SCHEMA_PATH, 'utf8');
-  db!.exec(schema);
+
+  // Strip full-line comments, then extract each complete statement.
+  // We track parenthesis depth so we never split inside a CREATE TABLE (...).
+  const noComments = schema.replace(/--[^\n]*/g, '');
+  const statements: string[] = [];
+  let current = '';
+  let depth = 0;
+
+  for (const ch of noComments) {
+    if (ch === '(') depth++;
+    else if (ch === ')') depth--;
+
+    if (ch === ';' && depth === 0) {
+      const stmt = current.trim();
+      if (stmt) statements.push(stmt);
+      current = '';
+    } else {
+      current += ch;
+    }
+  }
+  const last = current.trim();
+  if (last) statements.push(last);
+
+  for (const stmt of statements) {
+    db!.exec(stmt + ';');
+  }
   db!.save();
 }
 

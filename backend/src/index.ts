@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
-import { getDb } from './database/db';
+import { initDb } from './database/db';
 
 // Routes
 import authRoutes from './routes/auth';
@@ -50,17 +50,17 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Initialize database
-try {
-  getDb();
-  console.log('Database initialized successfully');
-} catch (err) {
-  console.error('Failed to initialize database:', err);
-  process.exit(1);
-}
-
-app.listen(PORT, () => {
-  console.log(`AssetFlow Backend running on http://localhost:${PORT}`);
-});
+// Initialize database then start server
+initDb()
+  .then(() => {
+    console.log('✅ Database initialized successfully');
+    app.listen(PORT, () => {
+      console.log(`🚀 AssetFlow Backend running on http://localhost:${PORT}`);
+    });
+  })
+  .catch(err => {
+    console.error('❌ Failed to initialize database:', err);
+    process.exit(1);
+  });
 
 export default app;

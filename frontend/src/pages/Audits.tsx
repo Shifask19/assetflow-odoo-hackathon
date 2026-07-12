@@ -183,21 +183,6 @@ export default function Audits() {
           </div>
         </>
       )}
-                              {c.status === 'Closed' && (
-                                <button onClick={() => fetchReport(c)} className="px-2 py-1 bg-green-50 text-green-700 hover:bg-green-100 rounded text-xs font-medium">Report</button>
-                              )}
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        </>
-      )}
 
       {/* ── ITEMS VIEW ── */}
       {view === 'items' && selectedCycle && (
